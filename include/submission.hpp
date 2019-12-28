@@ -7,9 +7,11 @@
 
 #include <istream>
 
+using SubmissionID = std::string;
+
 class Submission {
 private:
-    const int submission_id;
+    const SubmissionID submission_id;
     const std::string task_id;
     const std::string task_version;
     const std::string grading_option;
@@ -17,7 +19,7 @@ private:
     
 public:
     
-    int get_submission_id() const { return this->submission_id; }
+    const SubmissionID& get_submission_id() const { return this->submission_id; }
     const std::string& get_task_id() const { return this->task_id; }
     const std::string& get_task_version() const { return this->task_version; }
     const std::string& get_option() const { return this->grading_option; }

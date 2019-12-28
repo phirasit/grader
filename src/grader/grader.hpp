@@ -36,7 +36,7 @@ private:
     pthread_t thread_id;
     GRADER_STATUS status;
     
-    const Submission* submission;
+    Submission* submission;
     
 public:
     
@@ -46,14 +46,14 @@ public:
     inline pthread_t& get_thread_id() { return this->thread_id; }
     inline GRADER_STATUS get_status() const { return this->status; }
     
-    void grade(const Submission& submission);
+    void grade(Submission* submission);
     
     void signal(GRADER_SIGNAL sig);
     
     void start_grader();
 };
 
-GRADE_RESULT grade_submission(int grader_id, const Submission& submission);
+GRADE_RESULT grade_submission(int grader_id, Submission* submission);
 
 static void log(const int grader_id, const std::string& msg) {
   std::cerr << "[grader " << grader_id << "] " << msg << std::endl;

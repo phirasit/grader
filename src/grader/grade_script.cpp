@@ -17,12 +17,12 @@ static inline file::File get_grader_tmpfs(const int grader_id) {
 static inline std::string get_workspace_path(const int grader_id) {
   return file::get_path("/run/") + std::to_string(grader_id);
 }
-static inline file::File get_result_path(const int submission_id) {
-  return file::get_path("/results/") + std::to_string(submission_id);
+static inline file::File get_result_path(const SubmissionID& submission_id) {
+  return file::get_path("/results/") + submission_id;
 }
 
 static GRADE_RESULT judge_submission(
-  const Submission& submission,
+  Submission* submission,
   const Task& task,
   const Script& option,
   int grader_id) {
@@ -34,7 +34,7 @@ static GRADE_RESULT judge_submission(
   
   // report grading result
   const std::string& result_source_path = workspace + "/" + task.get_result_path();
-  const std::string& result_target_path = get_result_path(submission.get_submission_id());
+  const std::string& result_target_path = get_result_path(submission->get_submission_id());
   if (file::copy_file(result_source_path, result_target_path) > 0) {
     return GRADE_RESULT::CLEANUP_ERROR;
   }
@@ -82,18 +82,18 @@ static int cleanup_workspace(int grader_id) {
   return 0; // no error
 }
 
-GRADE_RESULT grade_submission(const int grader_id, const Submission& submission) {
+GRADE_RESULT grade_submission(const int grader_id, Submission* submission) {
   // load task
-  std::optional<Task> loaded_task = Task::load_task(submission.get_task_id());
+  std::optional<Task> loaded_task = Task::load_task(submission->get_task_id());
   if (!loaded_task.has_value()) {
     return GRADE_RESULT::NO_TASK;
   }
   const Task& task = loaded_task.value();
-  if (task.get_task_version() != submission.get_task_version()) {
+  if (task.get_task_version() != submission->get_task_version()) {
     // submission wants the different version of the task
     return GRADE_RESULT::INVALID_VERSION;
   }
-  std::optional<Script> judge_script = task.get_judge_option(submission.get_option());
+  std::optional<Script> judge_script = task.get_judge_option(submission->get_option());
   if (!judge_script.has_value()) {
     // the submission requires the non-existing grading version
     return GRADE_RESULT::INVALID_OPTION;

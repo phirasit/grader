@@ -7,9 +7,10 @@
 
 #include <iostream>
 
-void Grader::grade(const Submission& submission) {
+void Grader::grade(Submission* submission) {
   if (this->get_status() == GRADER_STATUS::IDLE) {
-    this->submission = &submission;
+    this->submission = submission;
+    log(this->get_grader_id(), "new submission: " + submission->get_submission_id());
     this->status = GRADER_STATUS::NEW;
   }
 }
@@ -63,7 +64,7 @@ void Grader::start_grader() {
     // if there is a new submission
     if (this->get_status() == GRADER_STATUS::NEW) {
       this->status = GRADER_STATUS::BUSY;
-      GRADE_RESULT result = grade_submission(this->get_grader_id(), *this->submission);
+      GRADE_RESULT result = grade_submission(this->get_grader_id(), this->submission);
       this->status = GRADER_STATUS::IDLE;
     }
     
