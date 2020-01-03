@@ -2,6 +2,7 @@
 // Created by phirasit on 12/24/19.
 //
 #include "file.hpp"
+#include "logger.hpp"
 
 #include <error.h>
 #include <string.h>
@@ -23,52 +24,58 @@
 
 namespace file {
     
+    static const Logger logger ("file-system");
+    
+    File base_dir(File path) {
+      while (!path.empty() && path.back() == '/') path.pop_back();
+      while (!path.empty() && path.back() != '/') path.pop_back();
+      return path;
+    }
+    
     void change_folder(const File& path) {
       if (chdir(path.c_str())) {
-        std::cerr << "[error] cannot change directory to " << path << std::endl;
-        std::cerr << "\t" << strerror(errno) << std::endl;
+        logger("[error] cannot change directory to ", path);
+        logger("\t", strerror(errno));
       } else {
-        std::cerr << "change directory to " << path << std::endl;
+        logger("change directory to ", path);
       }
     }
     
     void create_folder(const File& path) {
+      logger("creating new folder: ", path.c_str());
       if (mkdir(path.c_str(), 0770)) {
         if (errno != EEXIST) {
-          std::cerr << "[error] cannot create a new folder " << path << std::endl;
-          std::cerr << "\t" << strerror(errno) << std::endl;
+          logger("[error] cannot create a new folder: ", path, ": ", strerror(errno));
         } else {
-          std::cerr << "file exists " << path << std::endl;
+          logger("[warning] file exists: ", path);
         }
       } else {
-        std::cerr << "create new folder " << path << std::endl;
+        logger("create new folder ", path);
       }
     }
     
     void remove_file(const File& path) {
+      
       if (remove(path.c_str())) {
-        std::cerr << "[error] cannot remove file " << path << std::endl;
-        std::cerr << "\t" << strerror(errno) << std::endl;
+        logger("[error] cannot remove file ", path, ": ", strerror(errno));
       } else {
-        std::cerr << "remove file " << path << std::endl;
+        logger(path, "is removed");
       }
     }
     
     void remove_folder(const File& path) {
       if (unlink(path.c_str())) {
-        std::cerr << "[error] cannot remove folder " << path << std::endl;
-        std::cerr << "\t" << strerror(errno) << std::endl;
+        logger("[error] cannot remove folder ", path, ": ", strerror(errno));
       } else {
-        std::cerr << "remove folder " << path << std::endl;
+        logger(path, "is removed");
       }
     }
     
     void create_symlink(const File& target, const File& link) {
       if (symlink(target.c_str(), link.c_str())) {
-        std::cerr << "[error] cannot create symlink from " << link << " to " << target << std::endl;
-        std::cerr << "\t" << strerror(errno) << std::endl;
+        logger("[error] cannot create symlink from ", link, " to ",  target, ": ", strerror(errno));
       } else {
-        std::cerr << "create symlink from " << link << " to " << target << std::endl;
+        logger("create symlink from ", link, " to ", target);
       }
     }
     
@@ -92,18 +99,26 @@ namespace file {
       
       if (!src.is_open() || !target.is_open()) {
         // cannot open file
-        std::cerr << "[warn] cannot open file " << from << " or " << to << std::endl;
-        std::cerr << "\t" << strerror(errno) << std::endl;
+        logger("[warn] cannot open file ", from, " or ", to);
+        logger("\t", strerror(errno));
         return 1;
       }
       
       target << src.rdbuf();
       
-      std::cerr << "copy file from " << from << " to " << to << std::endl;
+      logger("copy file from ", from, " to ", to);
       
       src.close();
       target.close();
       
       return 0;
+    }
+    
+    int copy_folder(const File& from, const File& to) {
+      create_folder(to);
+      const std::string& command = std::string("cp -r ") + from + "/. " + std::string(to);
+      logger("executing command: ", command);
+      logger("copy folder from ", from, " to ", to);
+      return system(command.c_str());
     }
 }

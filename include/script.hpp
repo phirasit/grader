@@ -6,6 +6,7 @@
 #define GRADER_SCRIPT_HPP
 
 #include "yaml-cpp/yaml.h"
+#include "file.hpp"
 
 #include <string>
 #include <optional>
@@ -22,7 +23,8 @@ public:
     Script() = default;
     ~Script() = default;
     
-    int execute(const std::string& path) const;
+    bool empty() const { return scripts.empty(); }
+    int execute(const file::File& path) const;
     
     static std::optional<Script> from_yaml(const YAML::Node& yaml);
 };

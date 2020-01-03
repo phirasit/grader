@@ -42,7 +42,8 @@ static GRADE_RESULT judge_submission(
   return GRADE_RESULT::OK;
 }
 
-static int create_new_grading_env(const Task& task, const int grader_id) {
+static int create_new_grading_workspace(const Task& task, const int grader_id) {
+  const Logger logger ("worker" + std::to_string(grader_id) + "-workspace");
   const file::File& workspace = get_workspace_path(grader_id);
   const file::File& upperdir = get_grader_tmpfs(grader_id) + "/workspace";
   const file::File& workdir = get_grader_tmpfs(grader_id) + "/workdir";
@@ -57,11 +58,11 @@ static int create_new_grading_env(const Task& task, const int grader_id) {
     "upperdir=" + upperdir + "," +
     "workdir=" + workdir;
   if (mount("overlay", workspace.c_str(), "overlay", MS_MGC_VAL, mount_option.c_str())) {
-    log(grader_id, "cannot mount workspace" + std::string(strerror(errno)));
+    logger("cannot mount workspace", strerror(errno));
     return 1;
   }
   
-  log(grader_id, "create a new workspace");
+  logger("finish create a new workspace");
   
   return 1; // has error
 }
@@ -101,7 +102,7 @@ GRADE_RESULT grade_submission(const int grader_id, Submission* submission) {
   const Script& option = judge_script.value();
   
   // setup environment
-  if (create_new_grading_env(task, grader_id)) {
+  if (create_new_grading_workspace(task, grader_id)) {
     // fail to create grading environment
     return GRADE_RESULT::SETUP_ERROR;
   }

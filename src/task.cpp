@@ -4,6 +4,8 @@
 #define DEFAULT_OPTION_KEY "default"
 #endif
 
+const file::File Task::IGNORE_LOCATION = "";
+
 std::optional<Script> Task::get_judge_option(const std::string &option) const {
   const MapStringScript& options = this->judge_options;
   // get key = option
@@ -32,20 +34,30 @@ std::optional<Task> Task::load_task(const std::string& task_id) {
 std::optional<Task> Task::from_yaml(const YAML::Node& yaml, const file::File& location) {
   if (!yaml.IsMap()) return std::nullopt;
   
+  // get task id
   if (!yaml["id"]) return std::nullopt;
-  const std::string &task_id = yaml["id"].as<std::string>();
+  const TaskID& task_id = TaskID(yaml["id"].as<std::string>());
   
+  // get task version
   if (!yaml["version"]) return std::nullopt;
-  const std::string &task_version = yaml["version"].as<std::string>();
+  const std::string& task_version = yaml["version"].as<std::string>();
   
+  // get task install script
+  const std::optional<Script> install_script = yaml["install"]
+    ? Script::from_yaml(yaml["install"])
+    : Script();
+  if (!install_script.has_value()) return std::nullopt;
+  
+  // get task prejudge script
+  const std::optional<Script> prejudge = yaml["prejudge"]
+    ? Script::from_yaml(yaml["prejudge"])
+    : Script();
+  if (!prejudge.has_value()) return std::nullopt;
+  
+  // get task options
   const YAML::Node &option_yaml = yaml["option"];
-  if (!option_yaml) return std::nullopt;
+  if (option_yaml.IsNull()) return std::nullopt;
   if (!option_yaml.IsMap()) return std::nullopt;
-  
-  const std::optional<Script> prejudge = Script::from_yaml(yaml["prejudge"]);
-  if (!prejudge.has_value()) {
-    return std::nullopt;
-  }
   
   MapStringScript options;
   const std::optional<Script> default_script = Script::from_yaml(option_yaml);
@@ -62,13 +74,18 @@ std::optional<Task> Task::from_yaml(const YAML::Node& yaml, const file::File& lo
     }
   }
   
-  const std::optional<Script> postjudge = Script::from_yaml(yaml["postjudge"]);
-  if (!prejudge.has_value()) {
-    return std::nullopt;
-  }
+  // get task postjudge script
+  const std::optional<Script> postjudge = yaml["postjudge"]
+    ? Script::from_yaml(yaml["postjudge"])
+    : Script();
+  if (!postjudge.has_value()) return std::nullopt;
   
+  // get task result file
   if (!yaml["result"]) return std::nullopt;
   const std::string& result_file = yaml["result"].as<std::string>();
   
-  return Task(location, task_id, task_version, prejudge.value(), options, postjudge.value(), result_file);
+  return Task(
+    location, task_id, task_version,
+    install_script.value(), prejudge.value(), options, postjudge.value(),
+    result_file);
 }

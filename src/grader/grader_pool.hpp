@@ -17,32 +17,44 @@
 using OnFinishGradingType = std::function<void(const Submission&)>;
 
 enum GRADER_POOL_STATUS {
-   GRADER_POOL_RUNNING,
-   GRADER_POOL_TERMINATED,
+    GRADER_POOL_INIT,
+    GRADER_POOL_RUNNING,
+    GRADER_POOL_TERMINATED,
 };
 
 class GraderPool {
 private:
     const int num_graders;
+    const Logger logger;
     SubmissionPool waiting_pool, graded_pool;
-    std::vector<Grader> graders;
+    std::vector<Grader*> graders;
     GRADER_POOL_STATUS status;
     
     void assign_submission_to_grader();
     
 public:
     GraderPool (int num_graders) :
-      num_graders(num_graders),
-      status(GRADER_POOL_STATUS::GRADER_POOL_RUNNING) {}
+      num_graders(num_graders), logger("grader-pool"),
+      waiting_pool(), graded_pool(), graders(),
+      status(GRADER_POOL_INIT) {}
+    ~GraderPool() {
+      for (const Grader* grader : this->graders) {
+        delete grader;
+      }
+    }
     
-    void add_submission(const Submission& submission);
+    int add_submission(const Submission& submission);
     std::optional<Submission*> get_submission(const SubmissionID& submission_id) const;
     
     void start();
+    void stop();
     void signal(GRADER_SIGNAL sig);
     
     int get_num_graders() const { return this->num_graders; }
     GRADER_POOL_STATUS get_status() const { return this->status; }
+    
+    std::vector<GRADER_STATUS> get_worker_status() const;
+    size_t get_waiting_pool_size() const { return this->waiting_pool.size(); }
     
 };
 

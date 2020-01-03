@@ -12,6 +12,8 @@ namespace file {
     
     using File = std::string;
     
+    File base_dir(File path);
+    
     void change_folder(const File& path);
     void create_folder(const File& path);
     void remove_file(const File& path);
@@ -23,6 +25,7 @@ namespace file {
     File get_path(const File& path);
     
     int copy_file(const File& src, const File& target);
+    int copy_folder(const File& src, const File& target);
 }
 
 #endif //GRADER_FILE_HPP

@@ -2,10 +2,15 @@ cmake_minimum_required(VERSION 3.10)
 project(grader)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -O2")
 
 include_directories(include)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+
+# find library
+find_package(Threads REQUIRED)
 
 # set marco defintions
 if (NOT DEFINED BASE_DIR)
@@ -15,17 +20,19 @@ endif()
 # build main source files
 add_subdirectory(libs/yaml-cpp EXCLUDE_FROM_ALL)
 
-file(GLOB main_source src/*.cpp)
-add_library(main ${main_source})
-target_link_libraries(main PRIVATE yaml-cpp)
+file(GLOB main-source src/*.cpp)
+add_library(main ${main-source})
 add_definitions(-DBASE_DIR=${BASE_DIR})
+target_link_libraries(main PUBLIC yaml-cpp)
 
 # build setup script
 add_executable(setup src/setup/setup.cpp)
 target_link_libraries(setup PRIVATE main)
 
 # build sanbox
-add_executable(sandbox src/sandbox/sandbox.cpp)
+file(GLOB sandbox-source "src/sandbox/*.[ch]pp")
+add_executable(sandbox ${sandbox-source})
+target_link_libraries(sandbox PRIVATE main)
 
 # build task-manager manager
 file(GLOB task-manager-source "src/task-manager/*.[ch]pp")
@@ -48,7 +55,7 @@ if (NOT DEFINED GRADER_BUILD_TESTING)
 endif()
 MESSAGE("Build test progam: " ${GRADER_BUILD_TESTING})
 if (GRADER_BUILD_TESTING)
-    file(GLOB test-source test/*.[ch]pp test/*/*.[ch]pp)
+    file(GLOB test-source "test/*.[ch]pp" "test/[!sample]*/*.[ch]pp")
     add_executable(tests ${test-source})
-    target_link_libraries(tests PRIVATE main)
+    target_link_libraries(tests PRIVATE main Threads::Threads)
 endif()

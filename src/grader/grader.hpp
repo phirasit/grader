@@ -2,6 +2,7 @@
 #define __GRADE_HPP__
 
 #include "submission.hpp"
+#include "logger.hpp"
 
 #include <iostream>
 
@@ -18,12 +19,12 @@ enum GRADE_RESULT {
 };
 
 enum GRADER_STATUS {
-    IDLE,
-    INIT,
-    NEW,
-    BUSY,
-    TERMINATED,
-    ERROR,
+    GRADER_STATUS_IDLE,
+    GRADER_STATUS_INIT,
+    GRADER_STATUS_NEW,
+    GRADER_STATUS_BUSY,
+    GRADER_STATUS_TERMINATED,
+    GRADER_STATUS_ERROR,
 };
 
 enum GRADER_SIGNAL {
@@ -33,6 +34,7 @@ enum GRADER_SIGNAL {
 class Grader {
 private:
     const int grader_id;
+    const Logger logger;
     pthread_t thread_id;
     GRADER_STATUS status;
     
@@ -40,7 +42,10 @@ private:
     
 public:
     
-    Grader (int id) : grader_id(id), thread_id(0), status(GRADER_STATUS::INIT), submission(nullptr) {}
+    Grader (int id) :
+      grader_id(id), logger("worker" + std::to_string(grader_id)), thread_id(0),
+      status(GRADER_STATUS_INIT), submission(nullptr) {}
+    ~Grader() = default;
     
     inline int get_grader_id() { return this->grader_id; }
     inline pthread_t& get_thread_id() { return this->thread_id; }
@@ -50,13 +55,9 @@ public:
     
     void signal(GRADER_SIGNAL sig);
     
-    void start_grader();
+    int start_grader();
 };
 
 GRADE_RESULT grade_submission(int grader_id, Submission* submission);
-
-static void log(const int grader_id, const std::string& msg) {
-  std::cerr << "[grader " << grader_id << "] " << msg << std::endl;
-}
 
 #endif // __GRADE_HPP__
