@@ -5,13 +5,45 @@
 #include <sys/mount.h>
 #include <unistd.h>
 
-#include <iostream>
+std::ostream& operator << (std::ostream& out, GRADE_RESULT result) {
+  switch (result) {
+    case OK: return out << "OK";
+    case NO_TASK: return out << "NO_TASK";
+    case INVALID_VERSION: return out << "INVALID_VERSION";
+    case INVALID_OPTION: return out << "INVALID_OPTION";
+    case SETUP_ERROR: return out << "SETUP_ERROR";
+    case JUDGE_ERROR: return out << "JUDGE_ERROR";
+    case CLEANUP_ERROR: return out << "CLEANUP_ERROR";
+    default: return out << "INVALID_GRADE_RESULT";
+  }
+}
+
+std::ostream& operator << (std::ostream& out, GRADER_STATUS status) {
+  switch (status) {
+    case GRADER_STATUS_IDLE: return out << "IDLE";
+    case GRADER_STATUS_INIT: return out << "INIT";
+    case GRADER_STATUS_NEW: return out << "NEW";
+    case GRADER_STATUS_BUSY: return out << "BUSY";
+    case GRADER_STATUS_DONE: return out << "DONE";
+    case GRADER_STATUS_TERMINATED: return out << "TERMINATED";
+    case GRADER_STATUS_ERROR: return out << "ERROR";
+    default: return out << "INVALID_GRADER_STATUS";
+  }
+}
 
 void Grader::grade(Submission* submission) {
-  if (this->get_status() == GRADER_STATUS::GRADER_STATUS_IDLE) {
-    this->submission = submission;
-    this->logger("new submission: ", submission->get_submission_id());
-    this->status = GRADER_STATUS::GRADER_STATUS_NEW;
+  switch (this->get_status()) {
+    case GRADER_STATUS_IDLE:
+      this->submission = submission;
+      this->logger("new submission: ", submission->get_submission_id());
+      this->status = GRADER_STATUS_NEW;
+      break;
+    case GRADER_STATUS_DONE:
+      if (submission == nullptr) {
+        this->status = GRADER_STATUS_IDLE;
+      }
+    default:
+      break;
   }
 }
 
@@ -43,7 +75,7 @@ void Grader::signal(GRADER_SIGNAL sig) {
     case GRADER_SIGNAL::KILL:
       this->logger("terminating...");
       terminate(this);
-      this->status = GRADER_STATUS::GRADER_STATUS_TERMINATED;
+      this->status = GRADER_STATUS_TERMINATED;
       this->logger("terminated");
       break;
     default:
@@ -52,31 +84,26 @@ void Grader::signal(GRADER_SIGNAL sig) {
 }
 
 int Grader::start_grader() {
-  this->logger("starting grader...");
+  this->logger("starting worker...");
   
-  this->status = GRADER_STATUS::GRADER_STATUS_INIT;
+  this->status = GRADER_STATUS_INIT;
   if (init_grader(this->get_grader_id())) {
-    this->logger("grader is failed to start");
-    this->status = GRADER_STATUS::GRADER_STATUS_ERROR;
-    this->logger("grader_status ", this->get_status());
+    this->logger("worker is failed to start");
+    this->status = GRADER_STATUS_ERROR;
     return 1;
   }
   
-  this->logger("grader is started");
-  this->status = GRADER_STATUS::GRADER_STATUS_IDLE;
+  this->logger("worker is started");
+  this->status = GRADER_STATUS_IDLE;
   
-  while (
-    this->get_status() != GRADER_STATUS::GRADER_STATUS_ERROR
-    || this->get_status() != GRADER_STATUS::GRADER_STATUS_TERMINATED
-  ) {
-  
+  while (!this->is_terminated()) {
     // if there is a new submission
-    if (this->get_status() == GRADER_STATUS::GRADER_STATUS_NEW) {
-      this->status = GRADER_STATUS::GRADER_STATUS_BUSY;
-      this->logger("submission", this->submission->get_submission_id()," is being graded");
+    if (this->get_status() == GRADER_STATUS_NEW) {
+      this->status = GRADER_STATUS_BUSY;
+      this->logger("submission: \"", this->submission->get_submission_id(), "\" is being graded");
       GRADE_RESULT result = grade_submission(this->get_grader_id(), this->submission);
-      this->logger("finish grading submission ", this->submission->get_submission_id(), this->get_status());
-      this->status = GRADER_STATUS::GRADER_STATUS_IDLE;
+      this->logger("finish grading submission \"", this->submission->get_submission_id(), "\" status ", result);
+      this->status = GRADER_STATUS_DONE;
     }
     
     usleep(1000);

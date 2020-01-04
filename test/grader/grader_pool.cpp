@@ -2,13 +2,14 @@
 // Created by phirasit on 1/2/20.
 //
 #include "catch.hpp"
-#include "../src/grader/grade_script.cpp"
-#include "../src/grader/grader.cpp"
-#include "../src/grader/grader_pool.cpp"
-#include "../src/grader/submission_pool.cpp"
+#include "../../src/grader/grade_script.cpp"
+#include "../../src/grader/grader.cpp"
+#include "../../src/grader/grader_pool.cpp"
+#include "../../src/grader/submission_pool.cpp"
 #include "yaml-cpp/yaml.h"
 
-#include "submission.hpp"
+#include "../submission.hpp"
+#include "setup/setup.hpp"
 
 #include <pthread.h>
 #include <stdlib.h>
@@ -35,7 +36,7 @@ TEST_CASE("grader pool", "[grader-pool][end-to-end]") {
     
     // add a submission
     REQUIRE(grader_pool.add_submission(submission) == 0);
-    while (grader_pool.get_waiting_pool_size() > 0) usleep(1000);
+    while (grader_pool.get_graded_pool_size() == 0) usleep(1000);
     
     // stop grader
     grader_pool.stop();

@@ -11,6 +11,10 @@
 #include <string.h>
 #include <sys/mount.h>
 
+static Logger get_logger(const int grader_id) {
+  return Logger ("worker" + std::to_string(grader_id) + "-workspace");
+}
+
 static inline file::File get_grader_tmpfs(const int grader_id) {
   return file::get_path("/grader/") + std::to_string(grader_id);
 }
@@ -22,28 +26,37 @@ static inline file::File get_result_path(const SubmissionID& submission_id) {
 }
 
 static GRADE_RESULT judge_submission(
-  Submission* submission,
+  const Submission* submission,
   const Task& task,
-  const Script& option,
+  const Script& task_option,
   int grader_id) {
-  
+  const Logger logger = get_logger(grader_id);
   const file::File& workspace = get_workspace_path(grader_id);
   
+  // copy submission to workspace
+  const file::File& workspace_submission = workspace + "/" + task.get_submission_file();
+  file::copy_file(submission->get_filename(), workspace_submission);
+  
   // execute command inside a workspace
-  option.execute(workspace);
+  // TODO handle errors
+  task.get_prejudge_script().execute(workspace);
+  task_option.execute(workspace);
+  task.get_postjudge_script().execute(workspace);
   
   // report grading result
   const std::string& result_source_path = workspace + "/" + task.get_result_path();
   const std::string& result_target_path = get_result_path(submission->get_submission_id());
   if (file::copy_file(result_source_path, result_target_path) > 0) {
+    logger("cannot copy result file");
     return GRADE_RESULT::CLEANUP_ERROR;
   }
   
+  logger("finished judging successfully");
   return GRADE_RESULT::OK;
 }
 
 static int create_new_grading_workspace(const Task& task, const int grader_id) {
-  const Logger logger ("worker" + std::to_string(grader_id) + "-workspace");
+  const Logger logger = get_logger(grader_id);
   const file::File& workspace = get_workspace_path(grader_id);
   const file::File& upperdir = get_grader_tmpfs(grader_id) + "/workspace";
   const file::File& workdir = get_grader_tmpfs(grader_id) + "/workdir";
@@ -58,27 +71,31 @@ static int create_new_grading_workspace(const Task& task, const int grader_id) {
     "upperdir=" + upperdir + "," +
     "workdir=" + workdir;
   if (mount("overlay", workspace.c_str(), "overlay", MS_MGC_VAL, mount_option.c_str())) {
-    logger("cannot mount workspace", strerror(errno));
+    logger("[error] cannot mount workspace: ", strerror(errno));
     return 1;
   }
   
-  logger("finish create a new workspace");
+  logger("finish creating a new workspace");
   
-  return 1; // has error
+  return 0;
 }
 
 static int cleanup_workspace(int grader_id) {
+  const Logger logger = get_logger(grader_id);
   const file::File& grader = get_grader_tmpfs(grader_id);
   const file::File& workspace = get_workspace_path(grader_id);
   
+  // unmount workspace
   if (umount(workspace.c_str())) {
-    // umount unsuccessful
+    logger("cannot unmount: ", workspace);
     return 1;
   }
   
   // remove everything in the folder
-  file::remove_file(grader);
+  file::remove_folder(grader);
   file::create_folder(grader);
+  
+  logger("finished cleanup workspace");
   
   return 0; // no error
 }

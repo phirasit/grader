@@ -18,7 +18,11 @@ private:
     
 public:
     SubmissionPool() = default;
-    
+    ~SubmissionPool() {
+      for (const auto& it : index) {
+        delete it.second;
+      }
+    }
     void add(Submission* submission);
     std::optional<Submission*> get_first();
     std::optional<Submission*> get(const SubmissionID& submission_id) const;

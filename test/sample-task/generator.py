@@ -2,6 +2,7 @@
 import random
 import sys
 
+random.seed(0)
 for i in range(3):
     a, b = random.randint(1, 100), random.randint(1, 100)
     print("generating test {}".format(i+1), file=sys.stderr)

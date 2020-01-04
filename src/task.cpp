@@ -4,6 +4,8 @@
 #define DEFAULT_OPTION_KEY "default"
 #endif
 
+#include <iostream>
+
 const file::File Task::IGNORE_LOCATION = "";
 
 std::optional<Script> Task::get_judge_option(const std::string &option) const {
@@ -55,7 +57,8 @@ std::optional<Task> Task::from_yaml(const YAML::Node& yaml, const file::File& lo
   if (!prejudge.has_value()) return std::nullopt;
   
   // get task options
-  const YAML::Node &option_yaml = yaml["option"];
+  if (!yaml["judge"]) return std::nullopt;
+  const YAML::Node &option_yaml = yaml["judge"];
   if (option_yaml.IsNull()) return std::nullopt;
   if (!option_yaml.IsMap()) return std::nullopt;
   
@@ -80,6 +83,10 @@ std::optional<Task> Task::from_yaml(const YAML::Node& yaml, const file::File& lo
     : Script();
   if (!postjudge.has_value()) return std::nullopt;
   
+  // get submission file
+  if (!yaml["submission"]) return std::nullopt;
+  const std::string& submission_file = yaml["submission"].as<std::string>();
+  
   // get task result file
   if (!yaml["result"]) return std::nullopt;
   const std::string& result_file = yaml["result"].as<std::string>();
@@ -87,5 +94,5 @@ std::optional<Task> Task::from_yaml(const YAML::Node& yaml, const file::File& lo
   return Task(
     location, task_id, task_version,
     install_script.value(), prejudge.value(), options, postjudge.value(),
-    result_file);
+    submission_file, result_file);
 }

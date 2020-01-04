@@ -64,10 +64,11 @@ namespace file {
     }
     
     void remove_folder(const File& path) {
-      if (unlink(path.c_str())) {
+      const std::string& command = "rm -rf " + path;
+      if (system(command.c_str())) {
         logger("[error] cannot remove folder ", path, ": ", strerror(errno));
       } else {
-        logger(path, "is removed");
+        logger(path, " is removed");
       }
     }
     
@@ -94,6 +95,7 @@ namespace file {
     
     // TODO set output filesize limit
     int copy_file(const File &from, const File &to) {
+      /*
       std::ifstream src(from);
       std::ofstream target(to);
       
@@ -110,8 +112,10 @@ namespace file {
       
       src.close();
       target.close();
-      
-      return 0;
+       */
+      logger("copy file from ", from, " to ", to);
+      const std::string& command = "cp " + from + " " + to;
+      return system(command.c_str());
     }
     
     int copy_folder(const File& from, const File& to) {

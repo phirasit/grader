@@ -3,4 +3,4 @@ type: submission
 id: "sample-submission-1"
 task-id: "a+b"
 task-version: "1"
-option: "default"
+option: "c++"

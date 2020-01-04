@@ -55,6 +55,7 @@ public:
     
     std::vector<GRADER_STATUS> get_worker_status() const;
     size_t get_waiting_pool_size() const { return this->waiting_pool.size(); }
+    size_t get_graded_pool_size() const { return this->graded_pool.size(); }
     
 };
 

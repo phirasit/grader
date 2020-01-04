@@ -21,5 +21,5 @@ TEST_CASE("submission parsing", "[submission]") {
   REQUIRE(submission.get_submission_id() == "sample-submission-1");
   REQUIRE(submission.get_task_id() == "a+b");
   REQUIRE(submission.get_task_version() == "1");
-  REQUIRE(submission.get_option() == "default");
+  REQUIRE(submission.get_option() == "c++");
 }

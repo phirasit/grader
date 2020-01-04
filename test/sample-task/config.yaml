@@ -2,9 +2,15 @@ apiVersion: 1
 type: task
 id: "a+b"
 version: "1"
-install: "python3 generator.py"
-option:
-  test: "echo hello > result.out"
-  c++: "echo world > result.out"
-postjudge: "echo hello"
+install:
+  - "python3 generator.py"
+
+judge:
+  c++:
+    - "mv solution solution.cpp"
+    - "g++ solution.cpp -o solution"
+    - "./solution < 1.in > result.out"
+postjudge: "cat result.out 1.in"
+
+submission: "solution"
 result: "result.out"

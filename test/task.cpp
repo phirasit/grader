@@ -5,9 +5,9 @@
 #include "yaml-cpp/yaml.h"
 
 #include "task.hpp"
-#include "setup.hpp"
+#include "setup/setup.hpp"
+
 #include <stdlib.h>
-#include "setup.hpp"
 
 TEST_CASE("parse a task from yaml", "[task]") {
   
@@ -22,6 +22,7 @@ TEST_CASE("parse a task from yaml", "[task]") {
   const Task& task = task_or_null.value();
   REQUIRE(task.get_task_id() == "a+b");
   REQUIRE(task.get_task_version() == "1");
+  REQUIRE(task.get_submission_file() == "solution");
   REQUIRE(task.get_result_path() == "result.out");
 }
 

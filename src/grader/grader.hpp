@@ -4,28 +4,31 @@
 #include "submission.hpp"
 #include "logger.hpp"
 
-#include <iostream>
+#include <ostream>
 
 enum GRADE_RESULT {
     OK = 0,
-    
     NO_TASK,
     INVALID_VERSION,
     INVALID_OPTION,
     SETUP_ERROR,
-    PREJUDGE_ERROR,
-    POSTJUDGE_ERROR,
+    JUDGE_ERROR,
     CLEANUP_ERROR,
 };
+
+std::ostream& operator << (std::ostream& out, GRADE_RESULT result);
 
 enum GRADER_STATUS {
     GRADER_STATUS_IDLE,
     GRADER_STATUS_INIT,
     GRADER_STATUS_NEW,
     GRADER_STATUS_BUSY,
+    GRADER_STATUS_DONE,
     GRADER_STATUS_TERMINATED,
     GRADER_STATUS_ERROR,
 };
+
+std::ostream& operator << (std::ostream& out, GRADER_STATUS status);
 
 enum GRADER_SIGNAL {
     KILL,
@@ -50,6 +53,11 @@ public:
     inline int get_grader_id() { return this->grader_id; }
     inline pthread_t& get_thread_id() { return this->thread_id; }
     inline GRADER_STATUS get_status() const { return this->status; }
+    Submission* get_submission() const { return this->submission; }
+    
+    bool is_terminated() const {
+      return this->status == GRADER_STATUS_ERROR || this->status == GRADER_STATUS_TERMINATED;
+    }
     
     void grade(Submission* submission);
     
