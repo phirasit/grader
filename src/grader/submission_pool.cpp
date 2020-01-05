@@ -2,7 +2,7 @@
 // Created by phirasit on 12/28/19.
 //
 
-#include "submission_pool.hpp"
+#include "grader/submission_pool.hpp"
 
 void SubmissionPool::add(Submission* submission) {
   this->order.push(submission);

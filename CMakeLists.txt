@@ -17,37 +17,39 @@ if (NOT DEFINED BASE_DIR)
     set(BASE_DIR "/")
 endif()
 
-# build main source files
+# build main-lib source files
 add_subdirectory(libs/yaml-cpp EXCLUDE_FROM_ALL)
 
-file(GLOB main-source src/*.cpp)
-add_library(main ${main-source})
+file(GLOB main-lib-source src/*.cpp)
+add_library(main-lib ${main-lib-source})
 add_definitions(-DBASE_DIR=${BASE_DIR})
-target_link_libraries(main PUBLIC yaml-cpp)
+target_link_libraries(main-lib PUBLIC yaml-cpp)
 
 # build setup script
 add_executable(setup src/setup/setup.cpp)
-target_link_libraries(setup PRIVATE main)
+target_link_libraries(setup PRIVATE main-lib)
 
 # build sanbox
 file(GLOB sandbox-source "src/sandbox/*.[ch]pp")
 add_executable(sandbox ${sandbox-source})
-target_link_libraries(sandbox PRIVATE main)
+target_link_libraries(sandbox PRIVATE main-lib)
 
 # build task-manager manager
 file(GLOB task-manager-source "src/task-manager/*.[ch]pp")
 add_executable(task ${task-manager-source})
-target_link_libraries(task PRIVATE main)
+target_link_libraries(task PRIVATE main-lib)
 
 # build grader
 file(GLOB grader-source "src/grader/*.[ch]pp")
-add_executable(grader ${grader-source})
+add_library(grader-lib ${grader-source})
+target_link_libraries(grader-lib PRIVATE main-lib)
+add_executable(grader "src/cli/grader.cpp")
 
     # add pthread
     set(THREADS_PREFER_PTHREAD_FLAG ON)
     find_package(Threads REQUIRED)
 
-target_link_libraries(grader PRIVATE main Threads::Threads)
+target_link_libraries(grader PRIVATE grader-lib Threads::Threads)
 
 # build test files
 if (NOT DEFINED GRADER_BUILD_TESTING)
@@ -56,8 +58,8 @@ endif()
 MESSAGE("Build test progam: " ${GRADER_BUILD_TESTING})
 if (GRADER_BUILD_TESTING)
     file(GLOB test-source "test/*.[ch]pp" "test/*/*.[ch]pp")
-        list(FILTER test-source EXCLUDE REGEX "test/sample-.*/.*")
+    list(FILTER test-source EXCLUDE REGEX "test/sample-.*/.*")
     add_executable(tests ${test-source})
     target_include_directories(tests PRIVATE test)
-    target_link_libraries(tests PRIVATE main Threads::Threads)
+    target_link_libraries(tests PRIVATE main-lib grader-lib Threads::Threads)
 endif()

@@ -1,7 +1,7 @@
-#include "grader_pool.hpp"
+#include "grader/grader_pool.hpp"
 
 #include "file.hpp"
-#include "grader.hpp"
+#include "grader/grader.hpp"
 #include "logger.hpp"
 
 #include <pthread.h>

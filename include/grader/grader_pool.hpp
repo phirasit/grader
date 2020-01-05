@@ -5,8 +5,8 @@
 #ifndef GRADER_GRADER_POOL_HPP
 #define GRADER_GRADER_POOL_HPP
 
-#include "submission_pool.hpp"
-#include "grader.hpp"
+#include "grader/submission_pool.hpp"
+#include "grader/grader.hpp"
 
 #include <queue>
 #include <map>
@@ -53,7 +53,6 @@ public:
     int get_num_graders() const { return this->num_graders; }
     GRADER_POOL_STATUS get_status() const { return this->status; }
     
-    std::vector<GRADER_STATUS> get_worker_status() const;
     size_t get_waiting_pool_size() const { return this->waiting_pool.size(); }
     size_t get_graded_pool_size() const { return this->graded_pool.size(); }
     

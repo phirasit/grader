@@ -1,7 +1,7 @@
 //
 // Created by phirasit on 12/28/19.
 //
-#include "grader_pool.hpp"
+#include "grader/grader_pool.hpp"
 
 #include <signal.h>
 #include <stdlib.h>

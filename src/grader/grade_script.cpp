@@ -2,7 +2,7 @@
 // Created by phirasit on 12/24/19.
 //
 #include "file.hpp"
-#include "grader.hpp"
+#include "grader/grader.hpp"
 #include "task.hpp"
 #include "submission.hpp"
 
