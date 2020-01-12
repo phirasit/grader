@@ -19,8 +19,10 @@ private:
     
 public:
     Script(std::initializer_list<std::string> scripts) : scripts(scripts) {}
-    Script(std::vector<std::string>&& scripts) : scripts(std::move(scripts)) {}
+    Script(std::vector<std::string> scripts) : scripts(std::move(scripts)) {}
+    
     Script() = default;
+    Script(const Script& script) : Script(script.scripts) {}
     ~Script() = default;
     
     bool empty() const { return scripts.empty(); }

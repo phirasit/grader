@@ -2,23 +2,33 @@
  * Run a command inside a seccomp process
  */
 #include "yaml-cpp/yaml.h"
-#include "grade_script.hpp"
+#include "submission_config.hpp"
+#include "logger.hpp"
 
 #include <iostream>
 #include <unistd.h>
 
 int main(int argc, char* argv[]) {
-  if (argc <= 2) {
-    std::cerr << "usage: ./sandbox config-file.yaml" << std::endl;
+  const Logger logger ("sandbox");
+  
+  if (argc < 2) {
+    std::cerr << "usage: ./sandbox config-file.yaml ..." << std::endl;
     return 1;
   }
   
-  const YAML::Node config (argv[1]);
-
-  if (config.IsNull()) {
-    std::cerr << "cannot open config file: " << argv[1] << std::endl;
-    return 1;
+  // create a submission config
+  SubmissionConfig config;
+  for (int i = 1; i < argc; ++i) {
+    const YAML::Node& yaml = YAML::LoadFile(argv[i]);
+    if (yaml) {
+      config.update(yaml);
+    } else {
+      logger("[warning] omitting ", argv[i], ": cannot open the file");
+    }
   }
   
-  return grade_script(config);
+  config.grade()
+    .report(std::cout);
+  
+  return 0;
 }
