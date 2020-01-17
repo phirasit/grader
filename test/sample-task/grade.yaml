@@ -1,14 +1,17 @@
 apiVersion: 1
-num-tests: 10
+num-tests: 5
 run:
+  type: default
   time: 1
   memory: 32
+  script: "./solution-exe"
+  in: "tests/{}.in"
+  sol: "tests/{}.sol"
 groups:
   small:
-    tests: 1-2,6,9
+    tests: 1,3,5
   large:
-    tests: 3-5,7-8
+    tests: 2-2,4
     deps: small
-policy: GRADE_ALL
-input: ./a.out
-output: ./result
+policy: SKIP
+output: "result.out"

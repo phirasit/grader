@@ -8,9 +8,9 @@ install:
 judge:
   c++:
     - "mv solution solution.cpp"
-    - "g++ solution.cpp -o solution"
-    - "./solution < 1.in > result.out"
-postjudge: "cat result.out 1.in"
+    - "g++ solution.cpp -o solution-exe"
+postjudge:
+  - "sandbox grade.yaml"
 
 submission: "solution"
 result: "result.out"

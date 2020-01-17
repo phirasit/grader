@@ -29,8 +29,8 @@ target_link_libraries(main-lib PUBLIC yaml-cpp)
 add_executable(setup src/setup/setup.cpp)
 target_link_libraries(setup PRIVATE main-lib)
 
-# build sanbox
-file(GLOB sandbox-source "src/sandbox/*.[ch]pp")
+# build sandbox
+file(GLOB sandbox-source "src/sandbox/*.[ch]pp" "src/sandbox/*/*.[ch]pp")
 add_executable(sandbox ${sandbox-source})
 target_link_libraries(sandbox PRIVATE main-lib)
 
@@ -55,7 +55,7 @@ target_link_libraries(grader PRIVATE grader-lib Threads::Threads)
 if (NOT DEFINED GRADER_BUILD_TESTING)
     option(GRADER_BUILD_TESTING "enable build testing program" OFF)
 endif()
-MESSAGE("Build test progam: " ${GRADER_BUILD_TESTING})
+MESSAGE("Build test program: " ${GRADER_BUILD_TESTING})
 if (GRADER_BUILD_TESTING)
     file(GLOB test-source "test/*.[ch]pp" "test/*/*.[ch]pp")
     list(FILTER test-source EXCLUDE REGEX "test/sample-.*/.*")

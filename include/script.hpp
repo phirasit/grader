@@ -15,7 +15,7 @@
 
 class Script {
 private:
-    const std::vector<std::string> scripts;
+    std::vector<std::string> scripts;
     
 public:
     Script(std::initializer_list<std::string> scripts) : scripts(scripts) {}
@@ -23,6 +23,7 @@ public:
     
     Script() = default;
     Script(const Script& script) : Script(script.scripts) {}
+    Script& operator = (const Script& script) = default;
     ~Script() = default;
     
     bool empty() const { return scripts.empty(); }

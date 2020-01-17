@@ -5,8 +5,14 @@
 #include "test_result.hpp"
 
 void TestResult::report(std::ostream& out) const {
-  const auto test_result = this->get_result();
   for (const auto& group_id : this->group_order) {
-    out << group_id << " " << test_result.at(group_id) << std::endl;
+    const GRADE_STATUS _group_result = this->get_group_result(group_id).value_or(GRADE_STATUS_SKIP);
+    out << group_id << ": " << _group_result << std::endl;
+    if (_group_result != GRADE_STATUS_SKIP) {
+      for (const auto &test_id : this->groups.at(group_id).get_tests()) {
+        const GRADE_STATUS _test_result = this->get_test_result(test_id).value_or(GRADE_STATUS_SKIP);
+        out << " >> " << test_id << ": " << _test_result << std::endl;
+      }
+    }
   }
 }

@@ -20,4 +20,21 @@ static void update_if_exists(T1& value, const YAML::Node& data, TransformFn<T2, 
   value = apply(data.as<T2>());
 }
 
+class StringFormatter {
+private:
+    std::string format;
+public:
+    std::string& get() { return this->format; }
+    
+    [[nodiscard]] std::string get_string(const std::string& val) const {
+      static const std::string placeholder = "{}";
+      std::string result = this->format;
+      size_t pos;
+      while ((pos = result.find(placeholder)) != std::string::npos) {
+        result.replace(pos, placeholder.length(), val);
+      }
+      return result;
+    }
+};
+
 #endif //GRADER_UTILITY_HPP

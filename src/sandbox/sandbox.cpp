@@ -5,6 +5,7 @@
 #include "submission_config.hpp"
 #include "logger.hpp"
 
+#include <fstream>
 #include <iostream>
 #include <unistd.h>
 
@@ -27,8 +28,16 @@ int main(int argc, char* argv[]) {
     }
   }
   
-  config.grade()
-    .report(std::cout);
+  if (config.get_output().has_value()) {
+    // output to file
+    std::ofstream output_file (config.get_output().value());
+    config.grade().report(output_file);
+    output_file.close();
+  } else {
+    // output to std::cout
+    config.grade()
+      .report(std::cout);
+  }
   
   return 0;
 }

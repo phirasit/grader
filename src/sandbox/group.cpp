@@ -52,11 +52,8 @@ static const std::vector<T> convert_item_list(const std::string& test_id_string)
 };
 
 void Group::update(const YAML::Node &config) {
-  static const Logger logger("group");
-  
   update_if_exists<std::vector<int>, std::string>
     (this->tests, config["tests"], convert_item_list<int>);
-  
   update_if_exists<std::vector<std::string>, std::string>
     (this->dependency, config["deps"], convert_item_list<std::string>);
 }
