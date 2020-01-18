@@ -44,6 +44,7 @@ private:
     Constraint constraint;
     
 protected:
+    int enter_sandbox() const;
     int execute_script() const;
     static GRADE_STATUS interpret_wstatus(int wstatus);
 

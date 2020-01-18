@@ -9,9 +9,9 @@ run:
   sol: "tests/{}.sol"
 groups:
   small:
-    tests: 1,3,5
+    tests: 1,3,4-5
   large:
-    tests: 2-2,4
+    tests: 2-2
     deps: small
-policy: SKIP
+policy: SKIP_GROUP
 output: "result.out"

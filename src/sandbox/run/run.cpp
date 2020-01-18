@@ -8,7 +8,6 @@
 #include "logger.hpp"
 
 #include <stdlib.h>
-#include <wait.h>
 #include <unistd.h>
 
 std::ostream& operator << (std::ostream& out, GRADE_STATUS status) {
@@ -44,6 +43,8 @@ RunConfig* RunConfig::get_config(const std::string &type) {
 
 GRADE_STATUS RunConfig::interpret_wstatus(int wstatus) {
   if (WIFEXITED(wstatus)) return GRADE_STATUS_OK;
+  if (WIFSTOPPED(wstatus)) return GRADE_STATUS_RUNTIME_ERROR;
+  if (WIFSIGNALED(wstatus)) return GRADE_STATUS_RUNTIME_ERROR;
   return GRADE_STATUS_FAILED;
 }
 
@@ -51,9 +52,15 @@ int RunConfig::execute_script() const {
   static const Logger logger ("execute-script");
   logger("running: ", this->script);
   
+  // enter sandbox mode
+  if (this->enter_sandbox()) {
+    return 1;
+  }
+  
+  // convert this->script from std::string to char*[]
   std::stringstream stream (this->script);
   if (stream.eof()) {
-    return 0;
+    return 1;
   }
   
   std::string path, arg;

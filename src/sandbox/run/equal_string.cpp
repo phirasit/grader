@@ -50,8 +50,7 @@ GRADE_STATUS RunConfigCompareStringEqual::grade(int test_id) const {
     close(STDERR_FILENO);
   
     // TODO link stdin and stdout
-    this->execute_script();
-    exit(0);
+    exit(this->execute_script());
   }
 
   //////// checker //////////

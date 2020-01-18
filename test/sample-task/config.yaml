@@ -8,7 +8,7 @@ install:
 judge:
   c++:
     - "mv solution solution.cpp"
-    - "g++ solution.cpp -o solution-exe"
+    - "g++ solution.cpp -o solution-exe -static"
 postjudge:
   - "sandbox grade.yaml"
 

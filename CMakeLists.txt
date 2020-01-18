@@ -20,6 +20,14 @@ endif()
 # build main-lib source files
 add_subdirectory(libs/yaml-cpp EXCLUDE_FROM_ALL)
 
+# add libseccomp
+add_library(libseccomp STATIC IMPORTED)
+set_target_properties(
+        libseccomp PROPERTIES
+        IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/libs/libseccomp/src/.libs/libseccomp.a"
+        INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/libs/libseccomp/include"
+)
+
 file(GLOB main-lib-source src/*.cpp)
 add_library(main-lib ${main-lib-source})
 add_definitions(-DBASE_DIR=${BASE_DIR})
@@ -32,7 +40,8 @@ target_link_libraries(setup PRIVATE main-lib)
 # build sandbox
 file(GLOB sandbox-source "src/sandbox/*.[ch]pp" "src/sandbox/*/*.[ch]pp")
 add_executable(sandbox ${sandbox-source})
-target_link_libraries(sandbox PRIVATE main-lib)
+target_include_directories(sandbox PRIVATE libs/libseccomp/include)
+target_link_libraries(sandbox PRIVATE main-lib libseccomp)
 
 # build task-manager manager
 file(GLOB task-manager-source "src/task-manager/*.[ch]pp")
