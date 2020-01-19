@@ -32,8 +32,8 @@ public:
     Constraint() = default;
     ~Constraint() = default;
     
-    int get_time_ms() { return this->time_ms; }
-    int get_memory_mb() { return this->memory_mb; }
+    [[nodiscard]] int get_time_ms() const { return this->time_ms; }
+    [[nodiscard]] int get_memory_mb() const { return this->memory_mb; }
     
     void update(const YAML::Node& config);
 };
@@ -44,8 +44,8 @@ private:
     Constraint constraint;
     
 protected:
-    int enter_sandbox() const;
-    int execute_script() const;
+    [[nodiscard]] int enter_sandbox() const;
+    [[nodiscard]] int execute_script() const;
     static GRADE_STATUS interpret_wstatus(int wstatus);
 
 public:

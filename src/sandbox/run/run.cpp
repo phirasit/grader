@@ -9,6 +9,7 @@
 
 #include <stdlib.h>
 #include <unistd.h>
+#include <signal.h>
 
 std::ostream& operator << (std::ostream& out, GRADE_STATUS status) {
   switch (status) {
@@ -42,10 +43,15 @@ RunConfig* RunConfig::get_config(const std::string &type) {
 }
 
 GRADE_STATUS RunConfig::interpret_wstatus(int wstatus) {
-  if (WIFEXITED(wstatus)) return GRADE_STATUS_OK;
-  if (WIFSTOPPED(wstatus)) return GRADE_STATUS_RUNTIME_ERROR;
-  if (WIFSIGNALED(wstatus)) return GRADE_STATUS_RUNTIME_ERROR;
-  return GRADE_STATUS_FAILED;
+  if (WIFSIGNALED(wstatus)) {
+    switch (WTERMSIG(wstatus)) {
+      case SIGSEGV: return GRADE_STATUS_MEMORY_ERROR;
+      case SIGXCPU: return GRADE_STATUS_TIMEOUT;
+    }
+    return GRADE_STATUS_RUNTIME_ERROR;
+  }
+  // if exit normally
+  return GRADE_STATUS_OK;
 }
 
 int RunConfig::execute_script() const {
