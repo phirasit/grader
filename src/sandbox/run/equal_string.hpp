@@ -24,7 +24,7 @@ public:
       update_if_exists(sol_file.get(), config["sol"]);
     }
     
-    [[nodiscard]] GRADE_STATUS grade(int test_id) const override;
+    [[nodiscard]] CaseResult grade(int test_id) const override;
 };
 
 

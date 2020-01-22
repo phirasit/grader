@@ -25,4 +25,6 @@ public:
     void update(const YAML::Node& config);
 };
 
+using Groups = std::map<std::string, Group>;
+
 #endif //GRADER_SANDBOX_GROUP_HPP

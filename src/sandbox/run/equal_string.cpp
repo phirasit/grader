@@ -17,7 +17,7 @@ bool RunConfigCompareStringEqual::is_equal(const std::string& a, const std::stri
   return a == b;
 }
 
-GRADE_STATUS RunConfigCompareStringEqual::grade(int test_id) const {
+CaseResult RunConfigCompareStringEqual::grade(int test_id) const {
   static const Logger logger("grade-result");
   const std::string& filename = std::to_string(test_id);
   logger("start grading... #", test_id);
@@ -26,14 +26,14 @@ GRADE_STATUS RunConfigCompareStringEqual::grade(int test_id) const {
   int fd[2];
   if (pipe(fd) == -1) {
     logger("cannot create a pipe");
-    return GRADE_STATUS_SYSTEM_ERROR;
+    return CaseResult::SystemError;
   }
   
   // fork a child process
   pid_t pid = fork();
   if (pid < 0) {
     logger("cannot fork a process");
-    return GRADE_STATUS_SYSTEM_ERROR;
+    return CaseResult::SystemError;
   }
   
   ///////// child process /////////
@@ -62,7 +62,7 @@ GRADE_STATUS RunConfigCompareStringEqual::grade(int test_id) const {
   if (!sol.is_open()) {
     logger("cannot open ", this->sol_file.get_string(filename));
     close(fd[0]);
-    return GRADE_STATUS_SYSTEM_ERROR;
+    return CaseResult::SystemError;
   }
   
   // create istream from read fd
@@ -99,5 +99,5 @@ GRADE_STATUS RunConfigCompareStringEqual::grade(int test_id) const {
   
   logger("test result ", test_id, " = ", result);
   
-  return result;
+  return RunConfig::create_result_from_process(result);
 }

@@ -23,6 +23,31 @@ enum GRADE_STATUS {
 
 std::ostream& operator << (std::ostream& out, GRADE_STATUS status);
 
+class CaseResult {
+private:
+    GRADE_STATUS result;
+    int time_ms;
+    int memory_kb;
+
+public:
+    [[nodiscard]] GRADE_STATUS get_result() const { return this->result; }
+    [[nodiscard]] int get_time_ms() const { return this->time_ms; }
+    [[nodiscard]] int get_memory_kb() const { return this->memory_kb; }
+    
+    CaseResult() = default;
+    CaseResult (GRADE_STATUS result, int time_ms, int memory_kb) :
+      result(result), time_ms(time_ms), memory_kb(memory_kb) {}
+    ~CaseResult() = default;
+    
+    void add(const CaseResult& result);
+    
+    static const CaseResult Ok;
+    static const CaseResult SkipResult;
+    static const CaseResult SystemError;
+};
+
+std::ostream& operator << (std::ostream& out, const CaseResult& case_result);
+
 class Constraint {
 private:
     int time_ms; // millisecond
@@ -54,11 +79,13 @@ public:
     
     // these functions should be overridden
     virtual void update(const YAML::Node& config);
-    virtual GRADE_STATUS grade(int test_id) const = 0;
+    virtual CaseResult grade(int test_id) const = 0;
     
     static RunConfig* get_config(const std::string& type = "");
+    static CaseResult create_result_from_process(GRADE_STATUS status);
     
 };
 
+CaseResult grade_script(const RunConfig* config, int test_id);
 
 #endif //GRADER_SANDBOX_RUN_HPP

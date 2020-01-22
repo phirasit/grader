@@ -84,18 +84,18 @@ void SubmissionConfig::update(const YAML::Node& config) {
 
 static void grade_group(const std::string& group_id, const std::vector<int>& test_ids, RunConfig* run_config, GRADE_POLICY policy, TestResult& result) {
   bool skip = false;
-  GRADE_STATUS group_result = GRADE_STATUS_OK;
+  CaseResult group_result = CaseResult::Ok;
   for (int test_id : test_ids) {
     // skip if already been graded
     if (result.get_test_result(test_id).has_value()) {
       continue;
     }
     
-    GRADE_STATUS test_result = skip ? GRADE_STATUS_SKIP : run_config->grade(test_id);
-    skip |= ((policy & GRADE_POLICY_SKIP_TEST_IF_PREVIOUS_FAILED) && test_result != GRADE_STATUS_OK);
+    CaseResult test_result = skip ? CaseResult::SkipResult : grade_script(run_config, test_id);
+    skip |= ((policy & GRADE_POLICY_SKIP_TEST_IF_PREVIOUS_FAILED) && test_result.get_result() != GRADE_STATUS_OK);
   
     result.set_test_result(test_id, test_result);
-    group_result = std::max(group_result, test_result);
+    group_result.add(test_result);
   }
   result.set_group_result(group_id, group_result);
 }
@@ -125,9 +125,9 @@ TestResult SubmissionConfig::grade() const {
     if (this->grade_policy & GRADE_POLICY_SKIP_GROUP_IF_DEPENDENCY_FAILED) {
       const std::vector<std::string>& deps = this->groups.at(group_id).get_dependency();
       if (std::any_of(deps.begin(), deps.end(), [&result] (const std::string& group_id) {
-        return result.get_group_result(group_id).value() != GRADE_STATUS_OK;
+        return result.get_group_result(group_id).value().get_result() != GRADE_STATUS_OK;
       })) {
-        result.set_group_result(group_id, GRADE_STATUS_SKIP);
+        result.set_group_result(group_id, CaseResult::SkipResult);
         continue;
       }
     }

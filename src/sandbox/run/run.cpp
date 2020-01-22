@@ -7,9 +7,15 @@
 #include "../utility.hpp"
 #include "logger.hpp"
 
-#include <stdlib.h>
 #include <unistd.h>
-#include <signal.h>
+#include <wait.h>
+
+std::ostream& operator << (std::ostream& out, const CaseResult& case_result) {
+  return out << "[" << case_result.get_result()
+             << ", " << case_result.get_time_ms() << " ms"
+             << ", " << case_result.get_memory_kb() << " kb"
+             << "]";
+}
 
 std::ostream& operator << (std::ostream& out, GRADE_STATUS status) {
   switch (status) {
@@ -23,6 +29,17 @@ std::ostream& operator << (std::ostream& out, GRADE_STATUS status) {
   }
   return out << "INVALID";
 }
+
+const CaseResult CaseResult::Ok = CaseResult(GRADE_STATUS_OK, 0, 0);
+const CaseResult CaseResult::SkipResult = CaseResult(GRADE_STATUS_SKIP, 0, 0);
+const CaseResult CaseResult::SystemError = CaseResult(GRADE_STATUS_SYSTEM_ERROR, 0, 0);
+
+void CaseResult::add(const CaseResult& case_result) {
+  this->result = std::max(this->result, case_result.get_result());
+  this->time_ms = std::max(this->time_ms, case_result.get_time_ms());
+  this->memory_kb = std::max(this->memory_kb, case_result.get_memory_kb());
+}
+
 
 void Constraint::update(const YAML::Node& config) {
   if (!config) return;
@@ -83,3 +100,32 @@ int RunConfig::execute_script() const {
   return execvp(path.c_str(), (char**) args.data());
 }
 
+CaseResult grade_script(const RunConfig* config, int test_id) {
+  // create pipe
+  int fd[2];
+  pipe(fd);
+  
+  // fork new grade process
+  pid_t pid = fork();
+  if (pid == 0) {
+    // child process
+    // close read, put result to write
+    close(fd[0]);
+    CaseResult result = config->grade(test_id);
+    write(fd[1], &result, sizeof(result));
+    exit(0);
+  }
+  
+  int wstatus;
+  waitpid(pid, &wstatus, 0);
+  if (!WIFEXITED(wstatus)) {
+    return CaseResult::SystemError;
+  }
+  
+  close(fd[1]);
+  CaseResult result = CaseResult::SystemError;
+  read(fd[0], &result, sizeof(result));
+  close(fd[0]);
+  
+  return result;
+}

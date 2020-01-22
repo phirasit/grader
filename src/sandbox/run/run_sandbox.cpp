@@ -6,8 +6,10 @@
 
 #include <sys/resource.h>
 #include <sys/prctl.h>
+#include <sys/stat.h>
 
 #include <seccomp.h>
+#include <logger.hpp>
 
 int RunConfig::enter_sandbox() const {
   if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) == -1) {
@@ -68,5 +70,17 @@ int RunConfig::enter_sandbox() const {
   seccomp_load(ctx);
   
   return 0;
+}
+
+CaseResult RunConfig::create_result_from_process(GRADE_STATUS status) {
+  struct rusage usage;
+  if (getrusage(RUSAGE_CHILDREN, &usage) == -1) {
+    return CaseResult::SystemError;
+  }
+  
+  int time = (usage.ru_stime.tv_usec + usage.ru_utime.tv_usec) / 1000;
+  int memory = usage.ru_maxrss;
+  
+  return CaseResult(status, time, memory);
 }
 
