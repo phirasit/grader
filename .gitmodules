@@ -4,3 +4,6 @@
 [submodule "libs/libseccomp"]
 	path = libs/libseccomp
 	url = https://github.com/seccomp/libseccomp
+[submodule "libs/pistache"]
+	path = libs/pistache
+	url = https://github.com/oktal/pistache.git

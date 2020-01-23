@@ -10,6 +10,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/lib)
 
 # find library
+set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
 # set marco defintions
@@ -17,8 +18,13 @@ if (NOT DEFINED BASE_DIR)
     set(BASE_DIR "/")
 endif()
 
-# build main-lib source files
+# add yaml-cpp
 add_subdirectory(libs/yaml-cpp EXCLUDE_FROM_ALL)
+
+# add pistache
+set(CMAKE_BUILD_TYPE "Release")
+add_subdirectory(libs/pistache EXCLUDE_FROM_ALL)
+unset(CMAKE_BUILD_TYPE)
 
 # add libseccomp
 add_library(libseccomp STATIC IMPORTED)
@@ -52,13 +58,9 @@ target_link_libraries(task PRIVATE main-lib)
 file(GLOB grader-source "src/grader/*.[ch]pp")
 add_library(grader-lib ${grader-source})
 target_link_libraries(grader-lib PRIVATE main-lib)
-add_executable(grader "src/cli/grader.cpp")
-
-    # add pthread
-    set(THREADS_PREFER_PTHREAD_FLAG ON)
-    find_package(Threads REQUIRED)
-
-target_link_libraries(grader PRIVATE grader-lib Threads::Threads)
+file(GLOB grader-server-source "src/rest/*.[ch]pp")
+add_executable(grader-server ${grader-server-source})
+target_link_libraries(grader-server PRIVATE grader-lib Threads::Threads pistache)
 
 # build test files
 if (NOT DEFINED GRADER_BUILD_TESTING)
