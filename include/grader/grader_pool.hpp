@@ -22,6 +22,10 @@ enum GRADER_POOL_STATUS {
     GRADER_POOL_TERMINATED,
 };
 
+namespace std {
+    string to_string(GRADER_POOL_STATUS status);
+}
+
 class GraderPool {
 private:
     const int num_graders;
@@ -44,17 +48,20 @@ public:
     }
     
     int add_submission(const Submission& submission);
-    std::optional<Submission*> get_submission(const SubmissionID& submission_id) const;
+    [[nodiscard]] std::optional<Submission*> get_submission(const SubmissionID& submission_id) const;
     
     void start();
     void stop();
     void signal(GRADER_SIGNAL sig);
     
-    int get_num_graders() const { return this->num_graders; }
-    GRADER_POOL_STATUS get_status() const { return this->status; }
+    [[nodiscard]] int get_num_graders() const { return this->num_graders; }
+    [[nodiscard]] GRADER_POOL_STATUS get_status() const { return this->status; }
     
-    size_t get_waiting_pool_size() const { return this->waiting_pool.size(); }
-    size_t get_graded_pool_size() const { return this->graded_pool.size(); }
+    [[nodiscard]] size_t get_waiting_pool_size() const { return this->waiting_pool.size(); }
+    [[nodiscard]] size_t get_graded_pool_size() const { return this->graded_pool.size(); }
+    [[nodiscard]] GRADER_STATUS get_grader_status(int grader_id) const {
+      return this->graders.at(grader_id)->get_status();
+    }
     
 };
 

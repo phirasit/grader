@@ -7,3 +7,6 @@
 [submodule "libs/pistache"]
 	path = libs/pistache
 	url = https://github.com/oktal/pistache.git
+[submodule "libs/jsoncpp"]
+	path = libs/jsoncpp
+	url = https://github.com/open-source-parsers/jsoncpp

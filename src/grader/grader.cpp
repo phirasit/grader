@@ -7,29 +7,37 @@
 #include <unistd.h>
 
 std::ostream& operator << (std::ostream& out, GRADE_RESULT result) {
+  return out << std::to_string(result);
+}
+
+std::string std::to_string(GRADE_RESULT result) {
   switch (result) {
-    case OK: return out << "OK";
-    case NO_TASK: return out << "NO_TASK";
-    case INVALID_VERSION: return out << "INVALID_VERSION";
-    case INVALID_OPTION: return out << "INVALID_OPTION";
-    case SETUP_ERROR: return out << "SETUP_ERROR";
-    case JUDGE_ERROR: return out << "JUDGE_ERROR";
-    case CLEANUP_ERROR: return out << "CLEANUP_ERROR";
-    default: return out << "INVALID_GRADE_RESULT";
+    case OK: return "OK";
+    case NO_TASK: return "NO_TASK";
+    case INVALID_VERSION: return "INVALID_VERSION";
+    case INVALID_OPTION: return "INVALID_OPTION";
+    case SETUP_ERROR: return "SETUP_ERROR";
+    case JUDGE_ERROR: return "JUDGE_ERROR";
+    case CLEANUP_ERROR: return "CLEANUP_ERROR";
   }
+  return "INVALID_GRADE_RESULT";
 }
 
 std::ostream& operator << (std::ostream& out, GRADER_STATUS status) {
+  return out << std::to_string(status);
+}
+
+std::string std::to_string(GRADER_STATUS status) {
   switch (status) {
-    case GRADER_STATUS_IDLE: return out << "IDLE";
-    case GRADER_STATUS_INIT: return out << "INIT";
-    case GRADER_STATUS_NEW: return out << "NEW";
-    case GRADER_STATUS_BUSY: return out << "BUSY";
-    case GRADER_STATUS_DONE: return out << "DONE";
-    case GRADER_STATUS_TERMINATED: return out << "TERMINATED";
-    case GRADER_STATUS_ERROR: return out << "ERROR";
-    default: return out << "INVALID_GRADER_STATUS";
+    case GRADER_STATUS_IDLE: return "IDLE";
+    case GRADER_STATUS_INIT: return "INIT";
+    case GRADER_STATUS_NEW: return "NEW";
+    case GRADER_STATUS_BUSY: return "BUSY";
+    case GRADER_STATUS_DONE: return "DONE";
+    case GRADER_STATUS_TERMINATED: return "TERMINATED";
+    case GRADER_STATUS_ERROR: return "ERROR";
   }
+  return "INVALID_GRADER_STATUS";
 }
 
 void Grader::grade(Submission* submission) {

@@ -16,6 +16,7 @@ enum GRADE_RESULT {
     CLEANUP_ERROR,
 };
 
+namespace std { string to_string(GRADE_RESULT); }
 std::ostream& operator << (std::ostream& out, GRADE_RESULT result);
 
 enum GRADER_STATUS {
@@ -28,6 +29,7 @@ enum GRADER_STATUS {
     GRADER_STATUS_ERROR,
 };
 
+namespace std { string to_string(GRADER_STATUS); }
 std::ostream& operator << (std::ostream& out, GRADER_STATUS status);
 
 enum GRADER_SIGNAL {

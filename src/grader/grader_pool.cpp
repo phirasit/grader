@@ -8,6 +8,15 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+std::string std::to_string(GRADER_POOL_STATUS status) {
+  switch (status) {
+    case GRADER_POOL_INIT: return "INIT";
+    case GRADER_POOL_RUNNING: return "RUNNING";
+    case GRADER_POOL_TERMINATED: return "TERMINATED";
+  }
+  return "INVALID_GRADER_POOL_STATUS";
+}
+
 void* start_grader_thread(void* args);
 
 void GraderPool::assign_submission_to_grader() {
@@ -105,5 +114,3 @@ void* start_grader_thread(void* args) {
     (reinterpret_cast<Grader*>(args)
       ->start_grader());
 }
-
-

@@ -21,6 +21,12 @@ endif()
 # add yaml-cpp
 add_subdirectory(libs/yaml-cpp EXCLUDE_FROM_ALL)
 
+# add jsoncpp
+set(BUILD_SHARED_LIBS ON)
+add_subdirectory(libs/jsoncpp EXCLUDE_FROM_ALL)
+get_target_property(JSON_INC_PATH jsoncpp_lib INTERFACE_INCLUDE_DIRECTORIES)
+unset(BUILD_SHARED_LIBS)
+
 # add pistache
 set(CMAKE_BUILD_TYPE "Release")
 add_subdirectory(libs/pistache EXCLUDE_FROM_ALL)
@@ -60,7 +66,7 @@ add_library(grader-lib ${grader-source})
 target_link_libraries(grader-lib PRIVATE main-lib)
 file(GLOB grader-server-source "src/rest/*.[ch]pp")
 add_executable(grader-server ${grader-server-source})
-target_link_libraries(grader-server PRIVATE grader-lib Threads::Threads pistache)
+target_link_libraries(grader-server PRIVATE grader-lib Threads::Threads pistache jsoncpp_lib)
 
 # build test files
 if (NOT DEFINED GRADER_BUILD_TESTING)
