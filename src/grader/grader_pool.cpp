@@ -1,14 +1,12 @@
 #include "grader/grader_pool.hpp"
 
-#include "file.hpp"
 #include "grader/grader.hpp"
 #include "logger.hpp"
 
 #include <pthread.h>
-#include <stdlib.h>
 #include <unistd.h>
 
-std::string std::to_string(GRADER_POOL_STATUS status) {
+std::string to_string(GRADER_POOL_STATUS status) {
   switch (status) {
     case GRADER_POOL_INIT: return "INIT";
     case GRADER_POOL_RUNNING: return "RUNNING";
@@ -17,17 +15,30 @@ std::string std::to_string(GRADER_POOL_STATUS status) {
   return "INVALID_GRADER_POOL_STATUS";
 }
 
+std::string to_string(SUBMISSION_STATUS status) {
+  switch (status) {
+    case SUBMISSION_STATUS_WAITING: return "WAITING";
+    case SUBMISSION_STATUS_GRADING: return "GRADING";
+    case SUBMISSION_STATUS_GRADED: return "GRADED";
+    case SUBMISSION_STATUS_NOT_EXISTS: return "NOT_EXISTS";
+  }
+  return "INVALID_SUBMISSION_STATUS";
+}
+
 void* start_grader_thread(void* args);
 
 void GraderPool::assign_submission_to_grader() {
   for (Grader* const grader : this->graders) {
     if (grader->get_status() == GRADER_STATUS_DONE) {
       this->graded_pool.add(grader->get_submission());
+      this->grading_pool.remove(grader->get_submission()->get_submission_id());
       grader->grade(nullptr);
     }
     
     if (this->get_waiting_pool_size() > 0 && grader->get_status() == GRADER_STATUS_IDLE) {
       Submission* const submission = this->waiting_pool.get_first().value();
+      this->grading_pool.add(submission);
+      this->waiting_pool.remove(submission->get_submission_id());
       grader->grade(submission);
     }
   }
@@ -42,6 +53,13 @@ int GraderPool::add_submission(const Submission& submission) {
   }
   this->logger("[warning] ignore submission: ", submission.get_submission_id());
   return 1;
+}
+
+SUBMISSION_STATUS GraderPool::get_submission_status(const SubmissionID &submission_id) const {
+  if (this->graded_pool.get(submission_id) != std::nullopt) return SUBMISSION_STATUS_GRADED;
+  if (this->grading_pool.get(submission_id) != std::nullopt) return SUBMISSION_STATUS_GRADING;
+  if (this->waiting_pool.get(submission_id) != std::nullopt) return SUBMISSION_STATUS_WAITING;
+  return SUBMISSION_STATUS_NOT_EXISTS;
 }
 
 std::optional<Submission*> GraderPool::get_submission(const std::string& submission_id) const {

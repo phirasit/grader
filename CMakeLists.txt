@@ -32,6 +32,9 @@ set(CMAKE_BUILD_TYPE "Release")
 add_subdirectory(libs/pistache EXCLUDE_FROM_ALL)
 unset(CMAKE_BUILD_TYPE)
 
+# add basen lib
+include_directories(libs/basen/include)
+
 # add libseccomp
 add_library(libseccomp STATIC IMPORTED)
 set_target_properties(
@@ -43,7 +46,7 @@ set_target_properties(
 file(GLOB main-lib-source src/*.cpp)
 add_library(main-lib ${main-lib-source})
 add_definitions(-DBASE_DIR=${BASE_DIR})
-target_link_libraries(main-lib PUBLIC yaml-cpp)
+target_link_libraries(main-lib PUBLIC yaml-cpp jsoncpp_lib)
 
 # build setup script
 add_executable(setup src/setup/setup.cpp)

@@ -21,6 +21,8 @@ protected:
     
     // list of all resource functions
     void get_grader_info(const Http::Request&, Http::ResponseWriter);
+    void add_submission(const Http::Request&, Http::ResponseWriter);
+    void get_result(const Http::Request&, Http::ResponseWriter);
     void invalid_path(const Http::Request&, Http::ResponseWriter);
     
 public:

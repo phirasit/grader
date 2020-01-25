@@ -7,10 +7,10 @@
 #include <unistd.h>
 
 std::ostream& operator << (std::ostream& out, GRADE_RESULT result) {
-  return out << std::to_string(result);
+  return out << to_string(result);
 }
 
-std::string std::to_string(GRADE_RESULT result) {
+std::string to_string(GRADE_RESULT result) {
   switch (result) {
     case OK: return "OK";
     case NO_TASK: return "NO_TASK";
@@ -24,10 +24,10 @@ std::string std::to_string(GRADE_RESULT result) {
 }
 
 std::ostream& operator << (std::ostream& out, GRADER_STATUS status) {
-  return out << std::to_string(status);
+  return out << to_string(status);
 }
 
-std::string std::to_string(GRADER_STATUS status) {
+std::string to_string(GRADER_STATUS status) {
   switch (status) {
     case GRADER_STATUS_IDLE: return "IDLE";
     case GRADER_STATUS_INIT: return "INIT";
@@ -40,7 +40,7 @@ std::string std::to_string(GRADER_STATUS status) {
   return "INVALID_GRADER_STATUS";
 }
 
-void Grader::grade(Submission* submission) {
+void Grader::grade(Submission* const submission) {
   switch (this->get_status()) {
     case GRADER_STATUS_IDLE:
       this->submission = submission;

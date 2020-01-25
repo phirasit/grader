@@ -23,11 +23,14 @@ public:
         delete it.second;
       }
     }
-    void add(Submission* submission);
-    std::optional<Submission*> get_first();
-    std::optional<Submission*> get(const SubmissionID& submission_id) const;
     
-    size_t size() const { return this->order.size(); }
+    void add(Submission* submission);
+    void remove(const SubmissionID& submission_id);
+    
+    [[nodiscard]] std::optional<Submission*> get_first();
+    [[nodiscard]] std::optional<Submission*> get(const SubmissionID& submission_id) const;
+    
+    [[nodiscard]] size_t size() const { return this->order.size(); }
 };
 
 

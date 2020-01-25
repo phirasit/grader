@@ -22,15 +22,22 @@ enum GRADER_POOL_STATUS {
     GRADER_POOL_TERMINATED,
 };
 
-namespace std {
-    string to_string(GRADER_POOL_STATUS status);
-}
+std::string to_string(GRADER_POOL_STATUS status);
+
+enum SUBMISSION_STATUS {
+    SUBMISSION_STATUS_WAITING,
+    SUBMISSION_STATUS_GRADING,
+    SUBMISSION_STATUS_GRADED,
+    SUBMISSION_STATUS_NOT_EXISTS,
+};
+
+std::string to_string(SUBMISSION_STATUS status);
 
 class GraderPool {
 private:
     const int num_graders;
     const Logger logger;
-    SubmissionPool waiting_pool, graded_pool;
+    SubmissionPool waiting_pool, grading_pool, graded_pool;
     std::vector<Grader*> graders;
     GRADER_POOL_STATUS status;
     
@@ -39,7 +46,7 @@ private:
 public:
     GraderPool (int num_graders) :
       num_graders(num_graders), logger("grader-pool"),
-      waiting_pool(), graded_pool(), graders(),
+      waiting_pool(), grading_pool(), graded_pool(), graders(),
       status(GRADER_POOL_INIT) {}
     ~GraderPool() {
       for (const Grader* grader : this->graders) {
@@ -48,6 +55,7 @@ public:
     }
     
     int add_submission(const Submission& submission);
+    [[nodiscard]] SUBMISSION_STATUS get_submission_status(const SubmissionID& submission_id) const;
     [[nodiscard]] std::optional<Submission*> get_submission(const SubmissionID& submission_id) const;
     
     void start();
@@ -63,6 +71,9 @@ public:
       return this->graders.at(grader_id)->get_status();
     }
     
+    [[nodiscard]] static file::File get_result_file(const std::string& submission_id) {
+      return file::get_path("/results/" + submission_id);
+    }
 };
 
 #endif //GRADER_GRADER_POOL_HPP

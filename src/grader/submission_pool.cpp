@@ -9,13 +9,21 @@ void SubmissionPool::add(Submission* submission) {
   this->index.insert({submission->get_submission_id(), submission});
 }
 
+void SubmissionPool::remove(const SubmissionID& submission_id) {
+  this->index.erase(submission_id);
+}
+
 std::optional<Submission*> SubmissionPool::get_first() {
-  if (this->order.empty()) {
-    return std::nullopt;
-  }
-  Submission* first_sub = this->order.front();
-  this->order.pop();
-  this->index.erase(first_sub->get_submission_id());
+  Submission* first_sub;
+  
+  do {
+    if (this->order.empty()) {
+      return std::nullopt;
+    }
+    first_sub = this->order.front();
+    this->order.pop();
+  } while (this->index.find(first_sub->get_submission_id()) != this->index.end());
+  
   return first_sub;
 }
 

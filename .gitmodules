@@ -10,3 +10,6 @@
 [submodule "libs/jsoncpp"]
 	path = libs/jsoncpp
 	url = https://github.com/open-source-parsers/jsoncpp
+[submodule "libs/basen"]
+	path = libs/basen
+	url = https://github.com/azawadzki/base-n

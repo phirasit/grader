@@ -13,6 +13,7 @@ int main(int argc, char *argv[]) {
   file::create_folder(file::get_path("/"));
   file::create_folder(file::get_path("/tasks"));
   file::create_folder(file::get_path("/results"));
+  file::create_folder(file::get_path("/submissions"));
   
   file::create_folder("/tmp/grader");
   file::remove_file(file::get_path("/grader"));
