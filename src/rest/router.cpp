@@ -81,7 +81,7 @@ void GraderRestServer::get_grader_info(const Http::Request &request, Http::Respo
   
   body["graders-status"] = Json::arrayValue;
   for (size_t i = 0; i < this->pool->get_num_graders(); ++i) {
-    body["graders-status"].append(std::to_string(this->pool->get_grader_status(i)));
+    body["graders-status"].append(to_string(this->pool->get_grader_status(i)));
   }
   write_json_response(response, Http::Code::Ok, body);
 }
