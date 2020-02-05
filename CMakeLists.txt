@@ -20,6 +20,7 @@ endif()
 
 # add yaml-cpp
 add_subdirectory(libs/yaml-cpp EXCLUDE_FROM_ALL)
+include_directories(libs/yaml-cpp/include)
 
 # add jsoncpp
 set(BUILD_SHARED_LIBS ON)
@@ -36,12 +37,15 @@ unset(CMAKE_BUILD_TYPE)
 include_directories(libs/basen/include)
 
 # add libseccomp
-add_library(libseccomp STATIC IMPORTED)
-set_target_properties(
-        libseccomp PROPERTIES
-        IMPORTED_LOCATION "${CMAKE_SOURCE_DIR}/libs/libseccomp/src/.libs/libseccomp.a"
-        INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/libs/libseccomp/include"
+set(libseccomp.a "${CMAKE_SOURCE_DIR}/libs/libseccomp/src/.libs/libseccomp.a")
+add_custom_command(
+	OUTPUT ${libseccomp.a}
+	COMMAND ./configure
+	COMMAND make
+	WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/libs/libseccomp"
 )
+add_library(libseccomp INTERFACE)
+target_link_libraries(libseccomp INTERFACE ${libseccomp.a})
 
 file(GLOB main-lib-source src/*.cpp)
 add_library(main-lib ${main-lib-source})
